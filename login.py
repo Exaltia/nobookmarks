@@ -1,6 +1,5 @@
 from sqlalchemy import *
 from sqlalchemy.orm import *
-from sqlalchemy.sql import select
 import tornado.ioloop
 import os,sys
 import tornado.web
@@ -17,7 +16,42 @@ from time import time
 import random
 import string
 from datetime import datetime
-
+class logout_handler(tornado.web.RequestHandler):
+    mycfg = serverconfig()
+    engine = create_engine(''.join(
+        chain(*mycfg['dbconfig']['sqltype'], '://', mycfg['dbconfig']['user'], ':', mycfg['dbconfig']['pwd'], '@',
+              mycfg['dbconfig']['host'], '/', mycfg['dbconfig']['dbname'])))
+    # mycfg = serverconfig()
+    def get(self):
+        logoutsession = sessionmaker()
+        logoutsession.configure(bind=self.engine)
+        Base.metadata.create_all(self.engine)
+        logoutsession = logoutsession()  # Instancing the result of sessionmaker()
+        email = self.get_secure_cookie("user")
+        SessionID = self.get_secure_cookie("SessionID")# Type binary
+        SessionID = SessionID.decode('ascii')
+        # UserID = loginsession.query(User_infos.UserID).filter(User_infos.User_Name == email).one()
+        # user_password = loginsession.query(Users.Password).filter(Users.UserID == UserID).one()
+        # if UserID.UserID:
+        #     print('userid')
+        Sql_SessionID = logoutsession.query(Sessions.SessionID).filter(Sessions.SessionID == SessionID).delete()
+        # print(Sql_SessionID.SessionID)
+        # sleep(10)
+        # logoutsession.delete(Sql_SessionID)
+        # print(Sql_SessionID.SessionID)
+        # print('cookie sessionid', Sql_SessionID.SessionID)
+        self.clear_cookie("user")
+        self.clear_cookie("SessionID")
+        # sleep(10)
+        # if Sql_SessionID.SessionID == SessionID:
+        #
+        #     # print('sessionid')
+        #     # result = loginsession.query()
+        #     loginsession.delete(Sql_SessionID)
+        #     # Sql_SessionID.delete()
+        logoutsession.commit()
+        logoutsession.close()
+        self.redirect('/login')
 class login_handler(tornado.web.RequestHandler):
     mycfg = serverconfig()
     # db_parameters =
@@ -134,18 +168,30 @@ class login_handler(tornado.web.RequestHandler):
                         self.redirect('/bookmarks')
                     else:
                         print('sessionid else')
-                        self.send_error(401)
+                        path = os.getcwd()
+                        content = ''
+                        info = ''
+                        self.render("themes/default/html/index.html", info=info, path=path, content=content)
                 else:
                     print('userid else')
-                    self.send_error(401)
+                    path = os.getcwd()
+                    content = ''
+                    info = ''
+                    self.render("themes/default/html/index.html", info=info, path=path, content=content)
             else:
                 print('userstate else')
-                self.send_error(401)
+                path = os.getcwd()
+                content = ''
+                info = ''
+                self.render("themes/default/html/index.html", info=info, path=path, content=content)
         except:
             print(sys.exc_info())
-            self.send_error(500)
+            path = os.getcwd()
+            content = ''
+            info = ''
+            self.render("themes/default/html/index.html", info=info, path=path, content=content)
 
-        path = os.getcwd()
-        content = ''
-        info = ''
-        self.render("themes/default/html/index.html", info=info, path=path, content=content)
+        # path = os.getcwd()
+        # content = ''
+        # info = ''
+        # self.render("themes/default/html/index.html", info=info, path=path, content=content)
