@@ -112,6 +112,39 @@ class login_handler(tornado.web.RequestHandler):
                 self.send_error(401)
             # print('credentials,', email, pwd)
     def get(self):
+        try:
+            email = self.get_secure_cookie("user")
+            SessionID = self.get_secure_cookie("SessionID") #Type binary
+            loginsession = sessionmaker()
+            loginsession.configure(bind=self.engine)
+            Base.metadata.create_all(self.engine)
+            loginsession = loginsession()  # Instancing the result of sessionmaker()
+            UserState = loginsession.query(User_infos.UserState).filter(User_infos.User_Name == email).one()
+            if UserState.UserState == 1:
+                print('userstate')
+                UserID = loginsession.query(User_infos.UserID).filter(User_infos.User_Name == email).one()
+                # user_password = loginsession.query(Users.Password).filter(Users.UserID == UserID).one()
+                if UserID.UserID:
+                    print('userid')
+                    Sql_SessionID = loginsession.query(Sessions.SessionID).filter(Sessions.UserID == UserID).one()
+                    print('cookie sessionid', Sql_SessionID.SessionID)
+                    # sleep(10)
+                    if Sql_SessionID.SessionID == SessionID.decode('ascii'):
+                        print('sessionid')
+                        self.redirect('/bookmarks')
+                    else:
+                        print('sessionid else')
+                        self.send_error(401)
+                else:
+                    print('userid else')
+                    self.send_error(401)
+            else:
+                print('userstate else')
+                self.send_error(401)
+        except:
+            print(sys.exc_info())
+            self.send_error(500)
+
         path = os.getcwd()
         content = ''
         info = ''

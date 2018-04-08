@@ -4,11 +4,14 @@ import tornado.web
 import tornado.auth
 import tornado.options
 import tornado.escape
+import tornado.httpserver
 import os
 from login import login_handler
 from serverconfig import serverconfig
-class useless(tornado.web.RequestHandler):
-    pass
+import ssl
+class bookmarks_handler(tornado.web.RequestHandler):
+    def get(self):
+        pass
 # class Application(tornado.web.Application):
 #     """
 #     Main Class for this application holding everything together.
@@ -23,9 +26,12 @@ class MyApp(tornado.web.Application):
         # (r'/', useless),
         handlers = [
             (r"/login", login_handler),
+            (r"/bookmarks", bookmarks_handler),
         ]
+        # ssl_context = ssl.create_default_context()
         myconfig = serverconfig()
-
+        # ssl_ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        # ssl_ctx.load_cert_chain("selfsigned/cert.pem", "selfsigned/key.pem")
         settings = dict(
             cookie_secret= myconfig['global']['securekey'],
             # BAAAD, according to some devs, this cookie secret is as important as a ssl private key, so must be put outside of code
@@ -64,7 +70,15 @@ def main():
     myconfig = serverconfig()
     # print(myconfig['global']['port'])
     # Start application by listening to desired port and starting IOLoop.
-    application.listen(myconfig['global']['port'])
+    server = tornado.httpserver.HTTPServer(
+        application,
+        #There is no need to convert the certificate pem to another format, tornado handle it fine
+        ssl_options={
+            "certfile": "selfsigned/cert.pem",
+            "keyfile": "selfsigned/key.pem"
+            }
+        )
+    server.listen(myconfig['global']['port'])
     tornado.ioloop.IOLoop.instance().start()
 
 
