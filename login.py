@@ -1,5 +1,6 @@
 from sqlalchemy import *
 from sqlalchemy.orm import *
+from sqlalchemy.sql import select
 import tornado.ioloop
 import os,sys
 import tornado.web
@@ -12,6 +13,10 @@ from time import sleep
 from serverconfig import serverconfig
 from db_objects import *
 from passlib.hash import pbkdf2_sha256
+from time import time
+import random
+import string
+from datetime import datetime
 
 class login_handler(tornado.web.RequestHandler):
     mycfg = serverconfig()
@@ -67,7 +72,7 @@ class login_handler(tornado.web.RequestHandler):
             loginsession = sessionmaker()
             loginsession.configure(bind=self.engine)
             Base.metadata.create_all(self.engine)
-            loginsession = loginsession() #Instancing the result of sessionmaker(
+            loginsession = loginsession() #Instancing the result of sessionmaker()
             UserState = loginsession.query(User_infos.UserState).filter(User_infos.User_Name == email).one()
             UserID = loginsession.query(User_infos.UserID).filter(User_infos.User_Name == email).one()
             user_password = loginsession.query(Users.Password).filter(Users.UserID == UserID).one()
@@ -80,6 +85,26 @@ class login_handler(tornado.web.RequestHandler):
             print('result', result, UserState)
             if UserState[0] == 1:
                 if result:
+                    SessionID = ''.join(random.choice(string.ascii_uppercase) for i in range(64))
+                    SessionDate = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    Session_Infos = Sessions(UserID=UserID, SessionID=SessionID, SessionDate=SessionDate)
+                    session_db = sessionmaker()
+                    session_db.configure(bind=self.engine)
+                    Base.metadata.create_all(self.engine)
+                    session_db = session_db()  # Instancing the result of sessionmaker()
+                    session_db.add(Session_Infos)
+                    session_db.commit()
+                    session_db.close()
+                    domain = self.request.host #We need a domain name for the secure cookie
+                    # domain = domain.split('.')
+                    # domain = domain[1] + '.' + domain[2]
+                    if ':' in domain:
+                        domain = domain.split(':')
+                        domain = domain[0]
+                    print(domain)
+                    print(email[0])
+                    self.set_secure_cookie("user", email[0], domain=domain)
+                    self.set_secure_cookie("SessionID", SessionID, domain=domain)
                     self.redirect('/bookmarks')
                 else:
                     self.send_error(401)
