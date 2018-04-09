@@ -1,17 +1,14 @@
 import tornado.ioloop
 import tornado.web
-# import tornado.websocket
 import tornado.auth
 import tornado.options
 import tornado.escape
 import tornado.httpserver
 import os
-from login import login_handler
+from login import login_handler, logout_handler
 from serverconfig import serverconfig
 import ssl
-class bookmarks_handler(tornado.web.RequestHandler):
-    def get(self):
-        pass
+from display_bookmarks import bookmarks_handler
 # class Application(tornado.web.Application):
 #     """
 #     Main Class for this application holding everything together.
@@ -26,6 +23,7 @@ class MyApp(tornado.web.Application):
         # (r'/', useless),
         handlers = [
             (r"/login", login_handler),
+            (r"/logout", logout_handler),
             (r"/bookmarks", bookmarks_handler),
         ]
         # ssl_context = ssl.create_default_context()
