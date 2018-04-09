@@ -61,9 +61,10 @@
                     <div class="dropdown"> 
                         <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Menu&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</button>                         
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"> 
-                            <a class="dropdown-item" href="#">Categories</a> 
-                            <a class="dropdown-item" href="#">My account</a> 
-                            <a class="dropdown-item" href="#">Log out</a>
+                            <a class="dropdown-item" href="/categories">Categories</a>
+                            <a class="dropdown-item" href="/account">My account</a>
+                            <a class="dropdown-item" href="/add">Add bookmark</a>
+                            <a class="dropdown-item" href="/logout">Log out</a>
                             <a class="dropdown-item" href="#"></a> 
                         </div>                         
                     </div>
@@ -73,31 +74,35 @@
         <main role="main">
             <div class="album py-5 bg-light container">
                 <div class="container text-left float-left mh-100" id="side-container" data-pg-name="side-container" style="width: 150px;">
-                    <ul class="list-group list-group-flush"> 
-                        <li class="list-group-item">un</li>                         
+                    <ul class="list-group list-group-flush">
+                        {% for item in categories %}
+                        <li class="list-group-item">{{item}}</li>
                         <li class="list-group-item">zero</li>                         
                         <li class="list-group-item">Putain de categorie au nom excessivement long bordel de merde de tabernac de char a roulettes</li>                         
                         <li class="list-group-item">Porta ac consectetur ac</li>                         
-                        <li class="list-group-item">Vestibulum at eros</li>                         
+                        <li class="list-group-item">Vestibulum at eros</li>
+                        {%end%}
                     </ul>
                 </div>
                 <div class="container mw-100">
                     <div class="row">
+                        {% for entry in bookmarks %}
                         <div class="col-md-4">
                             <div class="card box-shadow mb-2 ">
-                                <img class="card-img-top" src="http://pinegrow.com/placeholders/img14.jpg" />
+                                <img class="card-img-top" src={{entry[3]}} />
                                 <div class="card-body">
-                                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                                    <p class="card-text">{{entry[1]}}</p>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div class="btn-group">
-                                            <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+                                            <a href="{{entry[0]}}" target="_blank" type="button" class="btn btn-sm btn-outline-secondary">View</a>
                                             <button type="button" class="btn btn-sm btn-outline-secondary">Edit</button>
                                         </div>
-                                        <small class="text-muted">9 mins</small>
+                                        <small class="text-muted">{{entry[2]}}</small>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        {%end%}
                         <div class="col-md-2 col-md-4">
                             <div class="card box-shadow mb-4">
                                 <img src="freetest.jpg" style="max-width: 360;" class="card-img-top" />
